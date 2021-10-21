@@ -1,9 +1,9 @@
 import java.io.FileNotFoundException;
 
-public class test {
+public class Test {
     public static void main(String[] args) {
 
-        matrix mat = new matrix();
+        Matrix mat = new Matrix();
         try {
             mat.Init("src/Input.txt");
         } catch (FileNotFoundException e) {
@@ -11,7 +11,7 @@ public class test {
         }
         mat.Print();
 
-        int result;
+        Result result;
         double[] array;
 
        /* System.out.println(mat.checkSCC(new int[]{0,1,2,3}));
@@ -26,30 +26,30 @@ public class test {
             } else {
                 array = mat.SolveByIterationsWithControl();
                 if (array != null) printArray(array);
-                else getResult(1);
+                else getResult(Result.IMPOSSIBLE_TO_SOLVE);
             }
         } else {
             result = mat.CheckAnswer(mat.GetCombination());
             getResult(result);
             mat.Print();
-            if (result == 2) {
+            if (result == Result.HAVE_SCC) {
                 array = mat.SolveByIterations();
                 printArray(array);
             }
-            if (result == 3) {
+            if (result == Result.NO_SCC) {
                 array = mat.SolveByIterationsWithControl();
-                if (array == null) getResult(1);
+                if (array == null) getResult(Result.IMPOSSIBLE_TO_SOLVE);
                 else printArray(array);
             }
         }
     }
 
 
-    public static void getResult(int result) {
+    public static void getResult(Result result) {
         switch (result) {
-            case 1 -> System.out.println("Систему нельзя решить итерационным методом \n");
-            case 2 -> System.out.println("Система больше не имеет 0 на диагонали и соблюдается ДУС \n");
-            case 3 -> System.out.println("Система больше не имеет 0 на диагонали, но не соблюдается ДУС \n");
+            case IMPOSSIBLE_TO_SOLVE -> System.out.println("Систему нельзя решить итерационным методом \n");
+            case HAVE_SCC -> System.out.println("Система больше не имеет 0 на диагонали и соблюдается ДУС \n");
+            case NO_SCC -> System.out.println("Система больше не имеет 0 на диагонали, но не соблюдается ДУС \n");
         }
     }
 

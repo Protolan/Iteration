@@ -1,21 +1,22 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.Array;
 import java.util.Scanner;
 import java.util.regex.*;
 
-public class matrix {
-    private double[][] array;
-    private int rowAmount, columnAmount;
-    private double epsilon;
-    private double[] sums;
-    private int[] notNullCombination;
+public class Matrix {
+    private double[][] _array;
+    private int _rowAmount, _columnAmount;
+    private double _epsilon;
+    private double[] _sums;
+    private int[] _notNullCombination;
 
 
     public void Print() {
         int i, j;
-        for (i = 0; i < rowAmount; i++) {
-            for (j = 0; j < columnAmount; j++)
-                System.out.printf("%15.6E", array[i][j]);
+        for (i = 0; i < _rowAmount; i++) {
+            for (j = 0; j < _columnAmount; j++)
+                System.out.printf("%15.6E", _array[i][j]);
             System.out.println();
         }
         System.out.println();
@@ -27,28 +28,28 @@ public class matrix {
         Pattern pat = Pattern.compile("[ \t]+");
         String str = scan.nextLine();
         String[] sn = pat.split(str);
-        rowAmount = Integer.parseInt(sn[0]);
-        columnAmount = Integer.parseInt(sn[1]) + 1;
-        epsilon = Math.pow(10, -Double.parseDouble(sn[2]) - 1);
-        notNullCombination = new int[rowAmount];
-        this.Create(rowAmount, columnAmount);
+        _rowAmount = Integer.parseInt(sn[0]);
+        _columnAmount = Integer.parseInt(sn[1]) + 1;
+        _epsilon = Math.pow(10, -Double.parseDouble(sn[2]) - 1);
+        _notNullCombination = new int[_rowAmount];
+        this.Create(_rowAmount, _columnAmount);
         int i, j;
-        for (i = 0; i < rowAmount; i++) {
+        for (i = 0; i < _rowAmount; i++) {
             str = scan.nextLine();
             sn = pat.split(str);
-            notNullCombination[i] = i;
-            for (j = 0; j < columnAmount; j++)
-                array[i][j] = Double.parseDouble(sn[j]);
+            _notNullCombination[i] = i;
+            for (j = 0; j < _columnAmount; j++)
+                _array[i][j] = Double.parseDouble(sn[j]);
         }
         scan.close();
-        sums = SumOfLines(array);
+        _sums = SumOfLines(_array);
 
     }
 
 
     public boolean CheckForZeros(int[] combination) {
-        for (int i = 0; i < rowAmount; i++)
-            if (CompareToZero(array[combination[i]][i]))
+        for (int i = 0; i < _rowAmount; i++)
+            if (CompareToZero(_array[combination[i]][i]))
                 return false;
         return true;
     }
@@ -59,16 +60,16 @@ public class matrix {
         boolean strictlyMore = false;
         boolean haveZeroes = false;
         boolean SCCworked = true;
-        for (int i = 0; i < rowAmount; i++) {
-            if (CompareToZero(array[combination[i]][i])) haveZeroes = true;
-            double sum = Math.abs(sums[combination[i]]) - Math.abs(array[combination[i]][i]) - Math.abs(array[combination[i]][i]);
+        for (int i = 0; i < _rowAmount; i++) {
+            if (CompareToZero(_array[combination[i]][i])) haveZeroes = true;
+            double sum = Math.abs(_sums[combination[i]]) - Math.abs(_array[combination[i]][i]) - Math.abs(_array[combination[i]][i]);
             if (sum <= 0) {
                 if (sum < 0)
                     strictlyMore = true;
             } else SCCworked = false;
         }
         if (!haveZeroes) {
-            if (rowAmount >= 0) System.arraycopy(combination, 0, notNullCombination, 0, rowAmount);
+            if (_rowAmount >= 0) System.arraycopy(combination, 0, _notNullCombination, 0, _rowAmount);
         }
 
 
@@ -78,24 +79,29 @@ public class matrix {
 
     //поиск сумм строк матрицы
     public double[] SolveByIterations() {
-        double[] result = new double[rowAmount];
+        double[] result = new double[_rowAmount];
         double x, summary;
         do {
             x = result[0];
-            for (int i = 0; i < rowAmount; i++) {
-                summary = array[i][columnAmount - 1];
-                for (int j = 0; j < rowAmount; j++)
-                    if (j != i)
-                        summary -= result[j] * array[i][j];
-                result[i] = summary / array[i][i];
+            for (int i = 0; i < _rowAmount; i++) {
+                summary = _array[i][_columnAmount - 1];
+                for (int j = 0; j < _rowAmount; j++) {
+                    if (j != i) summary -= result[j] * _array[i][j];
+                }
+                result[i] = summary / _array[i][i];
             }
-        } while (Math.abs(result[0] - Math.abs(x)) >= epsilon);
+            for (int i = 0; i < result.length; i++) {
+                System.out.println(result[i]);
+            }
+            System.out.println();
+            
+        } while (Math.abs(Math.abs(result[0]) - Math.abs(x)) >= _epsilon);
         return result;
     }
 
 
     public double[] SolveByIterationsWithControl() {
-        double[] result = new double[rowAmount];
+        double[] result = new double[_rowAmount];
         double x, summary;
         double delta;
         double localMaximum = Double.MIN_VALUE;
@@ -103,12 +109,12 @@ public class matrix {
         //проверка системы на сходимость через проверку первых 10 итераций
         for (int q = 0; q < 10; q++) {
             x = result[0];
-            for (i = 0; i < rowAmount; i++) {
-                summary = array[i][columnAmount - 1];
-                for (j = 0; j < rowAmount; j++)
+            for (i = 0; i < _rowAmount; i++) {
+                summary = _array[i][_columnAmount - 1];
+                for (j = 0; j < _rowAmount; j++)
                     if (j != i)
-                        summary -= result[j] * array[i][j];
-                result[i] = summary / array[i][i];
+                        summary -= result[j] * _array[i][j];
+                result[i] = summary / _array[i][i];
             }
             delta = Math.abs(Math.abs(x) - Math.abs(result[0]));
             if (q > 5) {
@@ -117,18 +123,18 @@ public class matrix {
             }
         }
         //если система не сходится, то возвращаем null
-        if (localMaximum > epsilon) return null;
+        if (localMaximum > _epsilon) return null;
         //если система сходится - решаем дальше
         do {
             x = result[0];
-            for (i = 0; i < rowAmount; i++) {
-                summary = array[i][columnAmount - 1];
-                for (j = 0; j < rowAmount; j++)
+            for (i = 0; i < _rowAmount; i++) {
+                summary = _array[i][_columnAmount - 1];
+                for (j = 0; j < _rowAmount; j++)
                     if (j != i)
-                        summary -= result[j] * array[i][j];
-                result[i] = summary / array[i][i];
+                        summary -= result[j] * _array[i][j];
+                result[i] = summary / _array[i][i];
             }
-        } while (Math.abs(result[0] - Math.abs(x)) >= epsilon);
+        } while (Math.abs(result[0] - Math.abs(x)) >= _epsilon);
         return result;
     }
 
@@ -137,11 +143,11 @@ public class matrix {
         //если можно сделать перестановку - делаем
         if (CheckSCC(combination))
             return true;
-        else if (diag >= rowAmount) return false;
+        else if (diag >= _rowAmount) return false;
         if (RemoveZeroesFromDiagonal(diag + 1, combination))
             return true;
 
-        for (int i = diag + 1; i < rowAmount; i++) {
+        for (int i = diag + 1; i < _rowAmount; i++) {
             SwapElements(i, diag, combination);
             if (RemoveZeroesFromDiagonal(diag + 1, combination))
                 return true;
@@ -151,39 +157,39 @@ public class matrix {
         return false;
     }
 
-    public int CheckAnswer(int[] combination) {
+    public Result CheckAnswer(int[] combination) {
         if (RemoveZeroesFromDiagonal(0, combination)) {
-            array = ReplaceWithCombination(combination);
-            return 2;
+            _array = ReplaceWithCombination(combination);
+            return Result.HAVE_SCC;
         }
 
-        if (CheckForZeros(notNullCombination)) {
-            array = ReplaceWithCombination(notNullCombination);
-            return 3;
+        if (CheckForZeros(_notNullCombination)) {
+            _array = ReplaceWithCombination(_notNullCombination);
+            return Result.NO_SCC;
         }
-        return 1;
+        return Result.IMPOSSIBLE_TO_SOLVE;
     }
 
     public double[][] ReplaceWithCombination(int[] combination) {
-        double[][] matrix = new double[rowAmount][];
+        double[][] matrix = new double[_rowAmount][];
         for (int i = 0; i < matrix.length; i++) {
-            matrix[i] = array[combination[i]];
+            matrix[i] = _array[combination[i]];
         }
-        this.array = matrix;
+        this._array = matrix;
         return matrix;
     }
 
 
     public int[] GetCombination() {
-        int[] result = new int[rowAmount];
-        for (int i = 0; i < rowAmount; i++) {
+        int[] result = new int[_rowAmount];
+        for (int i = 0; i < _rowAmount; i++) {
             result[i] = i;
         }
         return result;
     }
 
     private boolean CompareToZero(double a) {
-        return (Math.abs(a) < epsilon);
+        return (Math.abs(a) < _epsilon);
     }
 
     private double[] SumOfLines(double[][] matrix) {
@@ -196,10 +202,10 @@ public class matrix {
     }
 
     private void Create(int k, int l) {
-        this.array = new double[k][];
+        this._array = new double[k][];
         int i;
         for (i = 0; i < k; i++)
-            this.array[i] = new double[l];
+            this._array[i] = new double[l];
     }
 
     private void SwapElements(int i, int j, int[] combination) {
