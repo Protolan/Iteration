@@ -90,11 +90,6 @@ public class Matrix {
                 }
                 result[i] = summary / _array[i][i];
             }
-            for (int i = 0; i < result.length; i++) {
-                System.out.println(result[i]);
-            }
-            System.out.println();
-            
         } while (Math.abs(Math.abs(result[0]) - Math.abs(x)) >= _epsilon);
         return result;
     }
